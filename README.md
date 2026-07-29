@@ -11,6 +11,20 @@ telemetry.
 > **Tech:** Python · Flask · SQLite · pywebview (native window) · Pillow ·
 > reportlab · pikepdf · PyInstaller
 
+![The main archive view](docs/screenshots/main.png)
+
+The archive for one business: search, year and category filters, running totals,
+and every receipt as a thumbnail of the original document.
+
+![The generated PDF export](docs/screenshots/pdf-export.png)
+
+The one-click export, as handed to an accountant: a summary cover with totals and
+per-category subtotals, then — for every receipt — a details page followed by the
+original scan merged in behind it.
+
+> Screenshots use generated sample data. No real receipt, vendor or amount appears
+> anywhere in this repository.
+
 ---
 
 ## Why it exists
