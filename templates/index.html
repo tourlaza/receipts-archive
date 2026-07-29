@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Αρχείο Αποδείξεων</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <!-- ============ ΚΕΦΑΛΙΔΑ ============ -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">📁</span>
+      <div>
+        <h1>Αρχείο Αποδείξεων</h1>
+        <p class="subtitle">Ψηφιακό αρχείο παραστατικών</p>
+      </div>
+    </div>
+    <div class="biz-tabs" id="bizTabs"></div>
+  </header>
+
+  <!-- ============ ΓΡΑΜΜΗ ΕΝΕΡΓΕΙΩΝ ============ -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="search-ico">🔍</span>
+      <input id="search" type="text" placeholder="Αναζήτηση (προμηθευτής, κατηγορία, σημείωση…)">
+      <button id="clearSearch" class="clear-search hidden" type="button" title="Καθαρισμός αναζήτησης" aria-label="Καθαρισμός αναζήτησης">✕</button>
+    </div>
+    <select id="filterYear" class="filter"><option value="">Όλα τα έτη</option></select>
+    <select id="filterCategory" class="filter"><option value="">Όλες οι κατηγορίες</option></select>
+    <select id="sortBy" class="filter" title="Ταξινόμηση">
+      <option value="date_desc">Νεότερες πρώτα</option>
+      <option value="date_asc">Παλαιότερες πρώτα</option>
+      <option value="amount_desc">Ποσό: μεγαλύτερο</option>
+      <option value="amount_asc">Ποσό: μικρότερο</option>
+      <option value="vendor_asc">Προμηθευτής (Α–Ω)</option>
+    </select>
+    <button id="btnClearFilters" class="btn btn-ghost btn-small hidden" title="Εμφάνιση όλων — καθαρισμός αναζήτησης και φίλτρων">✕ Καθαρισμός φίλτρων</button>
+    <div class="spacer"></div>
+    <button id="btnAdd" class="btn btn-primary">＋ Νέα Απόδειξη</button>
+    <button id="btnSync" class="btn btn-secondary">✉️ Λήψη από Email</button>
+    <button id="btnExportAll" class="btn btn-ghost" title="Φτιάχνει ΕΝΑ PDF με όλες τις αποδείξεις που βλέπετε τώρα (με βάση τα φίλτρα) — ιδανικό για τον λογιστή/εφορία">📚 Εξαγωγή σε PDF</button>
+    <span class="toolbar-sep"></span>
+    <button id="btnBackup" class="btn btn-ghost" title="Αντίγραφο ασφαλείας σε USB ή φάκελο" aria-label="Αντίγραφο ασφαλείας">💾 Αντίγραφο</button>
+    <button id="btnOpenFolder" class="btn btn-ghost" title="Άνοιγμα του φακέλου με τα αρχεία μου" aria-label="Άνοιγμα φακέλου αρχείων">📂</button>
+    <button id="btnEmailSettings" class="btn btn-ghost" title="Ρυθμίσεις Email" aria-label="Ρυθμίσεις Email">⚙️</button>
+  </div>
+
+  <!-- ============ ΠΡΟΣ ΕΛΕΓΧΟ (από email) ============ -->
+  <section id="pendingBanner" class="pending-banner hidden">
+    <span>📨 Υπάρχουν <b id="pendingCount">0</b> νέα παραστατικά από το email που περιμένουν έλεγχο.</span>
+    <button id="btnReview" class="btn btn-warn">Έλεγχος τώρα</button>
+  </section>
+
+  <!-- ============ ΣΤΑΤΙΣΤΙΚΑ ============ -->
+  <div class="stats" id="stats"></div>
+  <details id="breakdown" class="breakdown hidden">
+    <summary>Ανάλυση ανά κατηγορία</summary>
+    <div id="breakdownBody" class="breakdown-body"></div>
+  </details>
+
+  <!-- ============ ΛΙΣΤΑ ΑΠΟΔΕΙΞΕΩΝ ============ -->
+  <main id="grid" class="grid"></main>
+  <div id="empty" class="empty hidden"></div>
+
+  <!-- ============ MODAL: Προσθήκη / Επεξεργασία ============ -->
+  <div id="modalReceipt" class="modal hidden">
+    <div class="modal-card">
+      <h2 id="receiptModalTitle">Νέα Απόδειξη</h2>
+      <form id="receiptForm">
+        <input type="hidden" id="receiptId">
+        <div class="field" id="fileField">
+          <label>Αρχείο (φωτογραφία ή PDF)</label>
+          <div id="dropzone" class="dropzone">
+            <input id="file" type="file" accept="image/*,application/pdf">
+            <p class="dz-hint">Ή σύρετε ένα αρχείο εδώ, ή κάντε <b>επικόλληση (Ctrl+V)</b> μιας φωτογραφίας.</p>
+            <p id="dzChosen" class="dz-chosen hidden"></p>
+          </div>
+          <small>Τραβήξτε φωτογραφία της απόδειξης ή επιλέξτε σκαναρισμένο αρχείο.</small>
+        </div>
+        <div class="field">
+          <label>Προμηθευτής / Εταιρεία</label>
+          <input id="vendor" type="text" placeholder="π.χ. ΕΚΟ, Πρακτορείο, Super Market…">
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Ημερομηνία</label>
+            <input id="date" type="date">
+          </div>
+          <div class="field">
+            <label>Ποσό (€)</label>
+            <input id="amount" type="text" inputmode="decimal" placeholder="π.χ. 54,20">
+          </div>
+        </div>
+        <div class="field">
+          <label>Κατηγορία</label>
+          <input id="category" list="categoryList" placeholder="Επιλέξτε ή γράψτε…">
+          <datalist id="categoryList"></datalist>
+        </div>
+        <div class="field">
+          <label>Σημειώσεις</label>
+          <textarea id="notes" rows="2" placeholder="Προαιρετικά"></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" data-close>Ακύρωση</button>
+          <button type="submit" class="btn btn-primary" id="receiptSubmit">Αποθήκευση</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: Ρυθμίσεις Email ============ -->
+  <div id="modalEmail" class="modal hidden">
+    <div class="modal-card">
+      <h2>Ρυθμίσεις Email</h2>
+      <p class="hint">Οι αποδείξεις θα λαμβάνονται αυτόματα από αυτόν τον λογαριασμό. Για Gmail/Outlook χρησιμοποιήστε «κωδικό εφαρμογής» (App Password), όχι τον κανονικό σας κωδικό.</p>
+      <form id="emailForm">
+        <div class="field">
+          <label>Πάροχος</label>
+          <select id="provider">
+            <option value="gmail">Gmail</option>
+            <option value="outlook">Outlook / Hotmail</option>
+            <option value="yahoo">Yahoo</option>
+            <option value="custom">Άλλος (χειροκίνητα)</option>
+          </select>
+        </div>
+        <div class="row">
+          <div class="field"><label>Διακομιστής (host)</label><input id="host" type="text"></div>
+          <div class="field small"><label>Θύρα</label><input id="port" type="number" value="993"></div>
+        </div>
+        <div class="field"><label>Email / Όνομα χρήστη</label><input id="username" type="text" placeholder="onoma@gmail.com"></div>
+        <div class="field"><label>Κωδικός (ή App Password)</label><input id="password" type="password" placeholder="Αφήστε κενό για να κρατηθεί ο υπάρχων"></div>
+        <div class="row">
+          <div class="field"><label>Φάκελος</label><input id="folder" type="text" value="INBOX"></div>
+          <div class="field small"><label>Ημέρες πίσω</label><input id="sinceDays" type="number" value="30"></div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" data-close>Κλείσιμο</button>
+          <button type="submit" class="btn btn-primary">Αποθήκευση</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: Έλεγχος pending ============ -->
+  <div id="modalReview" class="modal hidden">
+    <div class="modal-card wide">
+      <h2>Έλεγχος παραστατικών από Email</h2>
+      <p class="hint">Ελέγξτε κάθε παραστατικό, συμπληρώστε τα στοιχεία και πατήστε «Αρχειοθέτηση» ή «Απόρριψη».</p>
+      <div id="reviewList" class="review-list"></div>
+      <div class="modal-actions">
+        <button type="button" id="btnClearAllPending" class="btn btn-danger hidden">🗑️ Απόρριψη όλων</button>
+        <div class="spacer"></div>
+        <button type="button" class="btn btn-ghost" data-close>Κλείσιμο</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ΥΠΟΣΕΛΙΔΟ ============ -->
+  <footer class="appfoot">
+    🗂️ Τα αρχεία σας φυλάσσονται εδώ:
+    <button id="dataPath" class="linklike" type="button" title="Άνοιγμα φακέλου αρχείων">—</button>
+  </footer>
+
+  <!-- ============ ΕΙΔΟΠΟΙΗΣΗ ============ -->
+  <div id="toast" class="toast hidden"></div>
+  <div id="loader" class="loader hidden"><div class="spinner"></div><span id="loaderText">Παρακαλώ περιμένετε…</span></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

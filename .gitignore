@@ -1,0 +1,28 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# PyInstaller build output (contains absolute local paths — never commit)
+build/
+dist/
+build_log.txt
+*.manifest
+
+# Application data — receipts, database, exports. Lives in the user's
+# Documents folder, but ignored here as a safety net.
+*.db
+*.db-wal
+*.db-shm
+receipts.db
+Αποδείξεις/
+Εξαγωγές PDF/
+Προς Έλεγχο/
+
+# Local / editor
+.vscode/
+.idea/
+*.local
+Thumbs.db
+desktop.ini
